@@ -1,0 +1,12 @@
+<launch>
+    <arg name="config_path" default = "$(find feature_tracker)/../config/euroc/euroc_config.yaml" />
+	  <arg name="vins_path" default = "$(find feature_tracker)/../config/../" />
+    
+    <node name="feature_tracker" pkg="feature_tracker" type="feature_tracker" output="screen">
+        <param name="config_file" type="string" value="$(arg config_path)" />
+        <param name="vins_folder" type="string" value="$(arg vins_path)" />
+    </node>
+
+    <arg name="bag_filename" default="/home/jovyan/dataset/EuRoCMAV/MH_01_easy.bag"/>
+    <node name="playbag" pkg="rosbag" type="play" args="-r 1 --clock $(arg bag_filename)" />  
+</launch>
