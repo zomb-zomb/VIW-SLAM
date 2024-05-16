@@ -322,7 +322,8 @@ void FeatureTracker::undistortedPoints()
             pts_velocity.push_back(cv::Point2f(0, 0));
         }
     }    
-    prev_un_pts_map = cur_un_pts_map;
+    // prev_un_pts_map = cur_un_pts_map;
+    prev_un_pts_map.swap(cur_un_pts_map);
 
     ROS_DEBUG("Undistorted points costs: %fms", t_u.toc());
 }
