@@ -9,7 +9,7 @@
 using std::vector;
 using std::pair;
 
-int FeatureTracker::n_id = 0;
+int FeatureTracker::n_id = 0; // Total feature points number
 FeatureTracker::FeatureTracker(){}
 
 
@@ -324,6 +324,5 @@ void FeatureTracker::undistortedPoints()
     }    
     // prev_un_pts_map = cur_un_pts_map;
     prev_un_pts_map.swap(cur_un_pts_map);
-
     ROS_DEBUG("Undistorted points costs: %fms", t_u.toc());
 }
