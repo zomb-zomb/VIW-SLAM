@@ -1,4 +1,8 @@
 #include "../../include/initial/initial_ex_rotation.h"
+#include <utility>
+
+using std::vector;
+using std::pair;
 
 InitialEXRotation::InitialEXRotation(){
     frame_count = 0;
@@ -85,8 +89,8 @@ Matrix3d InitialEXRotation::solveRelativeR(const vector<pair<Vector3d, Vector3d>
             E = -E;
             decomposeE(E, R1, R2, t1, t2);
         }
-        double ratio1 = max(testTriangulation(ll, rr, R1, t1), testTriangulation(ll, rr, R1, t2));
-        double ratio2 = max(testTriangulation(ll, rr, R2, t1), testTriangulation(ll, rr, R2, t2));
+        double ratio1 = std::max(testTriangulation(ll, rr, R1, t1), testTriangulation(ll, rr, R1, t2));
+        double ratio2 = std::max(testTriangulation(ll, rr, R2, t1), testTriangulation(ll, rr, R2, t2));
         cv::Mat_<double> ans_R_cv = ratio1 > ratio2 ? R1 : R2;
 
         Matrix3d ans_R_eigen;

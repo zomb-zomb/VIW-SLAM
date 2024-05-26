@@ -132,7 +132,7 @@ vector<pair<Vector3d, Vector3d>> FeatureManager::getCorresponding(int frame_coun
 
             b = it.feature_per_frame[idx_r].point;
             
-            corres.push_back(make_pair(a, b));
+            corres.push_back(std::make_pair(a, b));
         }
     }
     return corres;
@@ -382,7 +382,7 @@ double FeatureManager::compensatedParallax2(const FeaturePerId &it_per_id, int f
     double v_i_comp = p_i_comp(1) / dep_i_comp;
     double du_comp = u_i_comp - u_j, dv_comp = v_i_comp - v_j;
 
-    ans = max(ans, sqrt(min(du * du + dv * dv, du_comp * du_comp + dv_comp * dv_comp)));
+    ans = std::max(ans, std::sqrt(std::min(du * du + dv * dv, du_comp * du_comp + dv_comp * dv_comp)));
 
     return ans;
 }

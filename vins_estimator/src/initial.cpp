@@ -57,7 +57,7 @@ bool Initial::initialStructure(Estimator *estimator)
 bool Initial::checkIMUObservibility(Estimator *estimator)
 {
     map<double, ImageFrame>::iterator frame_it;
-    Vector3d sum_g;
+    Vector3d sum_g(0.0, 0.0, 0.0);
     for (frame_it = estimator->all_image_frame.begin(), frame_it++; frame_it != estimator->all_image_frame.end(); frame_it++)
     {
         double dt = frame_it->second.pre_integration->sum_dt;
@@ -96,7 +96,7 @@ void Initial::buildSFMFeature(Estimator *estimator, vector<SFMFeature> &sfm_f)
         {
             imu_j++;
             Vector3d pts_j = it_per_frame.point;
-            tmp_feature.observation.push_back(make_pair(imu_j, Eigen::Vector2d{pts_j.x(), pts_j.y()}));
+            tmp_feature.observation.push_back(std::make_pair(imu_j, Eigen::Vector2d{pts_j.x(), pts_j.y()}));
         }
         sfm_f.push_back(tmp_feature);
     }
@@ -183,7 +183,7 @@ bool Initial::solvePnPForAllFrame(Estimator *estimator, Quaterniond Q[], Vector3
         cv::Mat K = (cv::Mat_<double>(3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1);     
         if(pts_3_vector.size() < 6)
         {
-            cout << "pts_3_vector size " << pts_3_vector.size() << endl;
+            std::cout << "pts_3_vector size " << pts_3_vector.size() << std::endl;
             ROS_DEBUG("Not enough points for solve pnp !");
             return false;
         }

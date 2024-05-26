@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-using namespace std;
+using std::vector;
+using std::pair;
 
 #include <opencv2/opencv.hpp>
 //#include <opencv2/core/eigen.hpp>

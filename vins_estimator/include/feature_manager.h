@@ -5,7 +5,13 @@
 #include <algorithm>
 #include <vector>
 #include <numeric>
-using namespace std;
+#include <map>
+
+using std::list;
+using std::map;
+using std::pair;
+using std::vector;
+using std::accumulate;
 
 #include <eigen3/Eigen/Dense>
 using namespace Eigen;

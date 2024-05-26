@@ -8,7 +8,11 @@
 #include "../feature_manager.h"
 
 using namespace Eigen;
-using namespace std;
+
+using std::map;
+using std::pair;
+using std::vector;
+
 
 class ImageFrame
 {

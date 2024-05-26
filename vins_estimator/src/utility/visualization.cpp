@@ -1,5 +1,4 @@
 #include "../../include/utility/visualization.h"
-
 using namespace ros;
 using namespace Eigen;
 ros::Publisher pub_odometry, pub_latest_odometry;
@@ -154,8 +153,8 @@ void pubOdometry(const Estimator &estimator, const std_msgs::Header &header)
         pub_relo_path.publish(relo_path);
 
         // write result to file
-        ofstream foutC(VINS_RESULT_PATH, ios::app);
-        foutC.setf(ios::fixed, ios::floatfield);
+        std::ofstream foutC(VINS_RESULT_PATH, std::ios::app);
+        foutC.setf(std::ios::fixed, std::ios::floatfield);
         foutC.precision(0);
         foutC << header.stamp.toSec() * 1e9 << ",";
         foutC.precision(5);
@@ -168,7 +167,7 @@ void pubOdometry(const Estimator &estimator, const std_msgs::Header &header)
               << tmp_Q.z() << ","
               << estimator.Vs[WINDOW_SIZE].x() << ","
               << estimator.Vs[WINDOW_SIZE].y() << ","
-              << estimator.Vs[WINDOW_SIZE].z() << "," << endl;
+              << estimator.Vs[WINDOW_SIZE].z() << "," << std::endl;
         foutC.close();
     }
 }

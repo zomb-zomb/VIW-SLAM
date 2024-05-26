@@ -140,7 +140,7 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
     {
         ImageFrame imageframe(image, header.stamp.toSec());
         imageframe.pre_integration = tmp_pre_integration;
-        all_image_frame.insert(make_pair(header.stamp.toSec(), imageframe));
+        all_image_frame.insert(std::make_pair(header.stamp.toSec(), imageframe));
         tmp_pre_integration = new IntegrationBase{acc_0, gyr_0, Bas[frame_count], Bgs[frame_count]};
     }
 
@@ -168,7 +168,7 @@ void Estimator::calibrationExRotation()
             if (initial_ex_rotation.CalibrationExRotation(corres, pre_integrations[frame_count]->delta_q, calib_ric))
             {
                 ROS_WARN("initial extrinsic rotation calib success");
-                ROS_WARN_STREAM("initial extrinsic rotation: " << endl << calib_ric);
+                ROS_WARN_STREAM("initial extrinsic rotation: " << std::endl << calib_ric);
                 ric[0] = calib_ric;
                 RIC[0] = calib_ric;
                 ESTIMATE_EXTRINSIC = 1;

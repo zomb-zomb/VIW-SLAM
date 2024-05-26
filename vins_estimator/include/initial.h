@@ -10,7 +10,9 @@
 #include "initial/initial_alignment.h"
 #include "initial/initial_ex_rotation.h"
 
-using namespace std;
+
+using std::vector;
+
 
 class Estimator;
 

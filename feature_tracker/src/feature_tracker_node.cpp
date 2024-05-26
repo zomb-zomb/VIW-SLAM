@@ -206,8 +206,8 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                     cv::line(tmp_img, trackerData[i].cur_pts[j], cv::Point2f(tmp_prev_uv.x(), tmp_prev_uv.y()), cv::Scalar(255 , 0, 0), 1 , 8, 0);                     
                 }
             }
-            cv::imshow("vis", stereo_img);
-            cv::waitKey(5);            
+            // cv::imshow("vis", stereo_img);
+            // cv::waitKey(5);            
             pub_match.publish(ptr->toImageMsg());
         }
     }

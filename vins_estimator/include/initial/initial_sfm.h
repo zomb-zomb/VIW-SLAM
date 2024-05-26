@@ -9,7 +9,12 @@
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 using namespace Eigen;
-using namespace std;
+
+using std::deque;
+using std::map;
+using std::pair;
+using std::vector;
+
 
 
 

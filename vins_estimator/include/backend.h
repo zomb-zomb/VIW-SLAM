@@ -18,7 +18,10 @@
 #include "factor/marginalization_factor.h"
 #include "factor/integration_base.h"
 
-using namespace std;
+using std::vector;
+using std::queue;
+using std::unordered_map;
+
 //#include "estimator.h"
 
 class Estimator;
