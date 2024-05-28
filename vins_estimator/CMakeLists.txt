@@ -13,8 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
     nav_msgs
     tf
     cv_bridge
+    sensor_msgs
+    custom_msgs
     )
-
 find_package(OpenCV REQUIRED)
 
 # message(WARNING "OpenCV_VERSION: ${OpenCV_VERSION}")
@@ -56,3 +57,9 @@ add_executable(vins_estimator
 target_link_libraries(vins_estimator ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES}) 
 
 
+add_executable(kaist_pub src/data_pub/kaist_pub.cpp)
+target_link_libraries(kaist_pub
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS} 
+    pthread
+    ) 
