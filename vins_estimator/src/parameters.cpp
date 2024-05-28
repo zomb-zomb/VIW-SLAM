@@ -4,9 +4,13 @@ double INIT_DEPTH;
 double MIN_PARALLAX;
 double ACC_N, ACC_W;
 double GYR_N, GYR_W;
+double ENC_N; // Encoder noise variance
 
 std::vector<Eigen::Matrix3d> RIC;
 std::vector<Eigen::Vector3d> TIC;
+
+Eigen::Matrix3d RIO; // Rotation from encoder to IMU frame
+Eigen::Vector3d TIO; // Translation from encoder to IMU frame
 
 Eigen::Vector3d G{0.0, 0.0, 9.8};
 
@@ -20,8 +24,14 @@ int ROLLING_SHUTTER;
 std::string EX_CALIB_RESULT_PATH;
 std::string VINS_RESULT_PATH;
 std::string IMU_TOPIC;
+std::string ENCODER_TOPIC;  // Encoder topic
+
 double ROW, COL;
 double TD, TR;
+
+double LEFT_D, RIGHT_D; // Odometry diameter
+double ENC_RESOLUTION;  // Encoder resolution
+double BASELINE; // Distance between two wheels
 
 template <typename T>
 T readParam(ros::NodeHandle &n, std::string name)
@@ -50,6 +60,7 @@ void readParameters(ros::NodeHandle &n)
     }
 
     fsSettings["imu_topic"] >> IMU_TOPIC;
+    fsSettings["encoder_topic"] >> ENCODER_TOPIC; 
 
     SOLVER_TIME = fsSettings["max_solver_time"];
     NUM_ITERATIONS = fsSettings["max_num_iterations"];
@@ -76,6 +87,13 @@ void readParameters(ros::NodeHandle &n)
     COL = fsSettings["image_width"];
     ROS_INFO("ROW: %f COL: %f ", ROW, COL);
 
+    // wheel odometry parameters
+    ENC_N = fsSettings["enc_n"];
+    ENC_RESOLUTION = fsSettings["encode_resolution"]; 
+    LEFT_D = fsSettings["left_wheel_diameter"];       
+    RIGHT_D = fsSettings["right_wheel_diameter"];     
+    BASELINE = fsSettings["baseline"];                
+
     ESTIMATE_EXTRINSIC = fsSettings["estimate_extrinsic"];
     if (ESTIMATE_EXTRINSIC == 2)
     {
@@ -96,8 +114,8 @@ void readParameters(ros::NodeHandle &n)
             ROS_WARN(" fix extrinsic param ");
 
         cv::Mat cv_R, cv_T;
-        fsSettings["extrinsicRotation"] >> cv_R;
-        fsSettings["extrinsicTranslation"] >> cv_T;
+        fsSettings["extrinsicRotation_ic"] >> cv_R;
+        fsSettings["extrinsicTranslation_ic"] >> cv_T;
         Eigen::Matrix3d eigen_R;
         Eigen::Vector3d eigen_T;
         cv::cv2eigen(cv_R, eigen_R);
@@ -106,9 +124,22 @@ void readParameters(ros::NodeHandle &n)
         eigen_R = Q.normalized();
         RIC.push_back(eigen_R);
         TIC.push_back(eigen_T);
-        ROS_INFO_STREAM("Extrinsic_R : " << std::endl << RIC[0]);
-        ROS_INFO_STREAM("Extrinsic_T : " << std::endl << TIC[0].transpose());
+        ROS_INFO_STREAM("Extrinsic_Ric : " << std::endl << RIC[0]);
+        ROS_INFO_STREAM("Extrinsic_Tic : " << std::endl << TIC[0].transpose());
+
         
+        // encoder to imu extrinsic
+        fsSettings["extrinsicRotation_io"] >> cv_R;
+        fsSettings["extrinsicTranslation_io"] >> cv_T;
+        cv::cv2eigen(cv_R, eigen_R);
+        cv::cv2eigen(cv_T, eigen_T);
+        Eigen::Quaterniond Qio(eigen_R);
+        eigen_R = Qio.normalized();
+        RIO = eigen_R;
+        TIO = eigen_T;
+        ROS_INFO_STREAM("Extrinsic_Rio : " << std::endl << RIO);
+        ROS_INFO_STREAM("Extrinsic_Tic : " << std::endl << TIO.transpose());
+              
     } 
 
     INIT_DEPTH = 5.0;

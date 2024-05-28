@@ -20,9 +20,14 @@ extern int ESTIMATE_EXTRINSIC;
 
 extern double ACC_N, ACC_W;
 extern double GYR_N, GYR_W;
+extern double ENC_N; // Encoder noise
 
 extern std::vector<Eigen::Matrix3d> RIC;
 extern std::vector<Eigen::Vector3d> TIC;
+
+extern Eigen::Matrix3d RIO; // Rotation from encoder to IMU frame
+extern Eigen::Vector3d TIO; // Translation from encoder to IMU frame
+
 extern Eigen::Vector3d G;
 
 extern double BIAS_ACC_THRESHOLD;
@@ -32,12 +37,17 @@ extern int NUM_ITERATIONS;
 extern std::string EX_CALIB_RESULT_PATH;
 extern std::string VINS_RESULT_PATH;
 extern std::string IMU_TOPIC;
+extern std::string ENCODER_TOPIC;  // Encoder topic
+
 extern double TD;
 extern double TR;
 extern int ESTIMATE_TD;
 extern int ROLLING_SHUTTER;
 extern double ROW, COL;
 
+extern double LEFT_D, RIGHT_D; // Odometry diameter
+extern double ENC_RESOLUTION;  // Encoder resolution
+extern double BASELINE; // Distance between two wheels
 
 void readParameters(ros::NodeHandle &n);
 
