@@ -105,6 +105,7 @@ void FeatureTracker::equalize(const cv::Mat &img, cv::Mat &img_out)
 
 void FeatureTracker::flowTrack()
 {
+    ROS_DEBUG("Temporal optical flow begins");
     if(cur_pts.size() > 0)
     {
         TicToc t_o;

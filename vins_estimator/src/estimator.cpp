@@ -32,6 +32,7 @@ void Estimator::clearState()
         dt_buf[i].clear();
         linear_acceleration_buf[i].clear();
         angular_velocity_buf[i].clear();
+        encoder_velocity_buf[i].clear(); // encoder
 
         if (pre_integrations[i] != nullptr)
             delete pre_integrations[i];
@@ -84,6 +85,7 @@ void Estimator::clearState()
 
 void Estimator::processIMU(double dt, const Vector3d &linear_acceleration, const Vector3d &angular_velocity)
 {
+    ROS_DEBUG("processIMU");
     if (!first_imu)
     {
         first_imu = true;
@@ -119,6 +121,47 @@ void Estimator::processIMU(double dt, const Vector3d &linear_acceleration, const
     gyr_0 = angular_velocity;
 }
 
+void Estimator::processIMUEncoder(double dt, const Vector3d &linear_acceleration, 
+    const Vector3d &angular_velocity, const Vector3d &encoder_velocity)
+{
+    ROS_DEBUG("processIMUEncoder");
+    if (!first_imu)
+    {
+        first_imu = true;
+        acc_0 = linear_acceleration;
+        gyr_0 = angular_velocity;
+        enc_v_0 = encoder_velocity;
+    }
+
+    if (!pre_integrations[frame_count])
+    {
+        pre_integrations[frame_count] = new IntegrationBase{acc_0, gyr_0, Bas[frame_count], Bgs[frame_count], enc_v_0}; // encoder
+    }
+    if (frame_count != 0)
+    {
+        pre_integrations[frame_count]->push_back(dt, linear_acceleration, angular_velocity, encoder_velocity);
+        //if(solver_flag != NON_LINEAR)
+            tmp_pre_integration->push_back(dt, linear_acceleration, angular_velocity, encoder_velocity);
+
+        dt_buf[frame_count].push_back(dt);
+        linear_acceleration_buf[frame_count].push_back(linear_acceleration);
+        angular_velocity_buf[frame_count].push_back(angular_velocity);
+        encoder_velocity_buf[frame_count].push_back(encoder_velocity);
+
+        int j = frame_count;         
+        Vector3d un_acc_0 = Rs[j] * (acc_0 - Bas[j]) - g;
+        Vector3d un_gyr = 0.5 * (gyr_0 + angular_velocity) - Bgs[j];
+        Rs[j] *= Utility::deltaQ(un_gyr * dt).toRotationMatrix();
+        Vector3d un_acc_1 = Rs[j] * (linear_acceleration - Bas[j]) - g;
+        Vector3d un_acc = 0.5 * (un_acc_0 + un_acc_1);
+        Ps[j] += dt * Vs[j] + 0.5 * dt * dt * un_acc;
+        Vs[j] += dt * un_acc;
+    }
+    acc_0 = linear_acceleration;
+    gyr_0 = angular_velocity;
+    enc_v_0 = encoder_velocity;
+}
+
 void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &image, const std_msgs::Header &header)
 {
     // 1. decide marg_old or marg new and add features to f_manager
@@ -141,7 +184,8 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
         ImageFrame imageframe(image, header.stamp.toSec());
         imageframe.pre_integration = tmp_pre_integration;
         all_image_frame.insert(std::make_pair(header.stamp.toSec(), imageframe));
-        tmp_pre_integration = new IntegrationBase{acc_0, gyr_0, Bas[frame_count], Bgs[frame_count]};
+        // tmp_pre_integration = new IntegrationBase{acc_0, gyr_0, Bas[frame_count], Bgs[frame_count]};
+        tmp_pre_integration = new IntegrationBase{acc_0, gyr_0, Bas[frame_count], Bgs[frame_count], enc_v_0}; // encoder
     }
 
     // 3. calibrate the rotation and translation from camera to IMU

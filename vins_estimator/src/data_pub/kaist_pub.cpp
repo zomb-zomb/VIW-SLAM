@@ -19,7 +19,7 @@ using namespace cv;
 using namespace Eigen;
 
 const int nDelayTimes = 2;
-string sData_path = "/home/wallong/dataset/urban28/urban28-pankyo";
+string sData_path = "/home/jovyan/dataset/KAIST/urban/urban28-pankyo";
 
 bool LoadSensorData(string& sensor_data_file, unordered_map<string, string>* time_data_map)
 {

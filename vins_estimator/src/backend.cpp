@@ -1,6 +1,6 @@
 #include "../include/backend.h"
 #include "../include/estimator.h" 
-
+#include "../include/factor/imu_encoder_factor.h"
 Backend::Backend() {clearState();}
 
 void Backend::clearState()
@@ -283,14 +283,22 @@ void Backend::nonLinearOptimization(Estimator *estimator,ceres::Problem &problem
                                  last_marginalization_parameter_blocks);
     }
 
+    // for (int i = 0; i < WINDOW_SIZE; i++)
+    // {
+    //     int j = i + 1;
+    //     if (estimator->pre_integrations[j]->sum_dt > 10.0)
+    //         continue;
+    //     IMUFactor* imu_factor = new IMUFactor(estimator->pre_integrations[j]);
+    //     problem.AddResidualBlock(imu_factor, NULL, para_Pose[i], para_SpeedBias[i], para_Pose[j], para_SpeedBias[j]);
+    // }
     for (int i = 0; i < WINDOW_SIZE; i++)
     {
         int j = i + 1;
         if (estimator->pre_integrations[j]->sum_dt > 10.0)
             continue;
-        IMUFactor* imu_factor = new IMUFactor(estimator->pre_integrations[j]);
-        problem.AddResidualBlock(imu_factor, NULL, para_Pose[i], para_SpeedBias[i], para_Pose[j], para_SpeedBias[j]);
-    }
+        IMUEncoderFactor* imu_encoder_factor = new IMUEncoderFactor(estimator->pre_integrations[j]);
+        problem.AddResidualBlock(imu_encoder_factor, NULL, para_Pose[i], para_SpeedBias[i], para_Pose[j], para_SpeedBias[j]);
+    }    
     int f_m_cnt = 0;
     int feature_index = -1;
     for (auto &it_per_id : estimator->f_manager.feature)
@@ -425,11 +433,14 @@ void Backend::margOld(Estimator *estimator,ceres::LossFunction *loss_function)
     {
         if (estimator->pre_integrations[1]->sum_dt < 10.0)
         {
-            IMUFactor* imu_factor = new IMUFactor(estimator->pre_integrations[1]);
-            ResidualBlockInfo *residual_block_info = new ResidualBlockInfo(imu_factor, NULL,
-                                                                           vector<double *>{para_Pose[0], para_SpeedBias[0], para_Pose[1], para_SpeedBias[1]},
-                                                                           vector<int>{0, 1});
-            marginalization_info->addResidualBlockInfo(residual_block_info);
+            // IMUFactor* imu_factor = new IMUFactor(estimator->pre_integrations[1]);
+            // ResidualBlockInfo *residual_block_info = new ResidualBlockInfo(imu_factor, NULL,
+            //                                                                vector<double *>{para_Pose[0], para_SpeedBias[0], para_Pose[1], para_SpeedBias[1]},
+            //                                                                vector<int>{0, 1});
+            // marginalization_info->addResidualBlockInfo(residual_block_info);
+            IMUEncoderFactor* imu_encoder_factor = new IMUEncoderFactor(estimator->pre_integrations[1]);
+            ResidualBlockInfo *residual_block_info = new ResidualBlockInfo(imu_encoder_factor, NULL, vector<double *>{para_Pose[0], para_SpeedBias[0], para_Pose[1], para_SpeedBias[1]}, vector<int>{0, 1});
+            marginalization_info->addResidualBlockInfo(residual_block_info);            
         }
     }
 
@@ -615,6 +626,7 @@ void Backend::slideWindow(Estimator *estimator)
                 estimator->dt_buf[i].swap(estimator->dt_buf[i + 1]);
                 estimator->linear_acceleration_buf[i].swap(estimator->linear_acceleration_buf[i + 1]);
                 estimator->angular_velocity_buf[i].swap(estimator->angular_velocity_buf[i + 1]);
+                estimator->encoder_velocity_buf[i].swap(estimator->encoder_velocity_buf[i + 1]); // encoder
 
                 estimator->Headers[i] = estimator->Headers[i + 1];
                 estimator->Ps[i].swap(estimator->Ps[i + 1]);
@@ -630,11 +642,14 @@ void Backend::slideWindow(Estimator *estimator)
             estimator->Bgs[WINDOW_SIZE] = estimator->Bgs[WINDOW_SIZE - 1];
 
             delete estimator->pre_integrations[WINDOW_SIZE];
-            estimator->pre_integrations[WINDOW_SIZE] = new IntegrationBase{estimator->acc_0, estimator->gyr_0, estimator->Bas[WINDOW_SIZE], estimator->Bgs[WINDOW_SIZE]};
+            // estimator->pre_integrations[WINDOW_SIZE] = new IntegrationBase{estimator->acc_0, estimator->gyr_0, estimator->Bas[WINDOW_SIZE], estimator->Bgs[WINDOW_SIZE]};
+            estimator->pre_integrations[WINDOW_SIZE] = new IntegrationBase{estimator->acc_0, estimator->gyr_0, estimator->Bas[WINDOW_SIZE], estimator->Bgs[WINDOW_SIZE], estimator->enc_v_0};
 
             estimator->dt_buf[WINDOW_SIZE].clear();
             estimator->linear_acceleration_buf[WINDOW_SIZE].clear();
             estimator->angular_velocity_buf[WINDOW_SIZE].clear();
+            
+            estimator->encoder_velocity_buf[WINDOW_SIZE].clear(); // encoder
 
             if (estimator->solver_flag == INITIAL)
             {
@@ -666,11 +681,17 @@ void Backend::slideWindow(Estimator *estimator)
                 Vector3d tmp_linear_acceleration = estimator->linear_acceleration_buf[estimator->frame_count][i];
                 Vector3d tmp_angular_velocity = estimator->angular_velocity_buf[estimator->frame_count][i];
 
-                estimator->pre_integrations[estimator->frame_count - 1]->push_back(tmp_dt, tmp_linear_acceleration, tmp_angular_velocity);
+                Vector3d tmp_encoder_velocity = estimator->encoder_velocity_buf[estimator->frame_count][i]; // encoder
+
+                // estimator->pre_integrations[estimator->frame_count - 1]->push_back(tmp_dt, tmp_linear_acceleration, tmp_angular_velocity);
+                estimator->pre_integrations[estimator->frame_count - 1]->push_back(tmp_dt, tmp_linear_acceleration, tmp_angular_velocity, tmp_encoder_velocity); // encoder
+                
 
                 estimator->dt_buf[estimator->frame_count - 1].push_back(tmp_dt);
                 estimator->linear_acceleration_buf[estimator->frame_count - 1].push_back(tmp_linear_acceleration);
                 estimator->angular_velocity_buf[estimator->frame_count - 1].push_back(tmp_angular_velocity);
+
+                estimator->encoder_velocity_buf[estimator->frame_count - 1].push_back(tmp_encoder_velocity); // encoder
             }
 
             estimator->Headers[estimator->frame_count - 1] = estimator->Headers[estimator->frame_count];
@@ -681,11 +702,13 @@ void Backend::slideWindow(Estimator *estimator)
             estimator->Bgs[estimator->frame_count - 1] = estimator->Bgs[estimator->frame_count];
 
             delete estimator->pre_integrations[WINDOW_SIZE];
-            estimator->pre_integrations[WINDOW_SIZE] = new IntegrationBase{estimator->acc_0, estimator->gyr_0, estimator->Bas[WINDOW_SIZE], estimator->Bgs[WINDOW_SIZE]};
+            // estimator->pre_integrations[WINDOW_SIZE] = new IntegrationBase{estimator->acc_0, estimator->gyr_0, estimator->Bas[WINDOW_SIZE], estimator->Bgs[WINDOW_SIZE]};
+            estimator->pre_integrations[WINDOW_SIZE] = new IntegrationBase{estimator->acc_0, estimator->gyr_0, estimator->Bas[WINDOW_SIZE], estimator->Bgs[WINDOW_SIZE], estimator->enc_v_0}; // encoder
 
             estimator->dt_buf[WINDOW_SIZE].clear();
             estimator->linear_acceleration_buf[WINDOW_SIZE].clear();
             estimator->angular_velocity_buf[WINDOW_SIZE].clear();
+            estimator->encoder_velocity_buf[WINDOW_SIZE].clear(); // encoder
 
             slideWindowNew(estimator);
         }

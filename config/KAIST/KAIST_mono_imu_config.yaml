@@ -76,7 +76,7 @@ td: 0.0                             # initial value of time offset. unit: s. rea
 loop_closure: 1                    # start loop closure
 load_previous_pose_graph: 0        # load and reuse previous pose graph; load from 'pose_graph_save_path'
 fast_relocalization: 1             # useful in real-time and large project
-pose_graph_save_path: "/home/xiaoqiang/output/pose_graph/" # save and load path
+pose_graph_save_path: "/home/jovyan/output/vins-mono/pose_graph/" # save and load path
 
 #rolling shutter parameters
 rolling_shutter: 0                  # 0: global shutter camera, 1: rolling shutter camera

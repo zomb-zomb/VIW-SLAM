@@ -38,6 +38,13 @@ class Estimator
      */
     void processIMU(double t, const Vector3d &linear_acceleration, const Vector3d &angular_velocity);
 
+
+    /**
+     * @brief pre-integrate IMU and encoder
+     * @param Input  double dt, const Vector3d &linear_acceleration, const Vector3d &angular_velocity, const Vector3d &encoder_velocity
+     */
+    void processIMUEncoder(double dt, const Vector3d &linear_acceleration, const Vector3d &angular_velocity, const Vector3d &encoder_velocity);
+    
     /**
      * @brief main process of vio
      * @param Input  const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &image, const std_msgs::Header &header
@@ -123,12 +130,12 @@ class Estimator
     // @param status value: pre-integration bk->bk+1
     IntegrationBase *pre_integrations[(WINDOW_SIZE + 1)];
     Vector3d acc_0, gyr_0;
-
+    Vector3d enc_v_0; //encoder
     // @param buffer
     vector<double> dt_buf[(WINDOW_SIZE + 1)];
     vector<Vector3d> linear_acceleration_buf[(WINDOW_SIZE + 1)];
     vector<Vector3d> angular_velocity_buf[(WINDOW_SIZE + 1)];
-
+    vector<Vector3d> encoder_velocity_buf[(WINDOW_SIZE + 1)]; // encoder
     // @param frame count(max=10)
     int frame_count;
 

@@ -29,9 +29,10 @@ std::string ENCODER_TOPIC;  // Encoder topic
 double ROW, COL;
 double TD, TR;
 
+int ENCODER;
 double LEFT_D, RIGHT_D; // Odometry diameter
 double ENC_RESOLUTION;  // Encoder resolution
-double BASELINE; // Distance between two wheels
+double WHEELBASE; // Distance between two wheels
 
 template <typename T>
 T readParam(ros::NodeHandle &n, std::string name)
@@ -88,11 +89,12 @@ void readParameters(ros::NodeHandle &n)
     ROS_INFO("ROW: %f COL: %f ", ROW, COL);
 
     // wheel odometry parameters
-    ENC_N = fsSettings["enc_n"];
+    ENCODER = fsSettings["is_encoder"]; 
     ENC_RESOLUTION = fsSettings["encode_resolution"]; 
     LEFT_D = fsSettings["left_wheel_diameter"];       
     RIGHT_D = fsSettings["right_wheel_diameter"];     
-    BASELINE = fsSettings["baseline"];                
+    WHEELBASE = fsSettings["wheelbase"];                
+    ROS_INFO("ROW: %f COL: %f ", ROW, COL);             
 
     ESTIMATE_EXTRINSIC = fsSettings["estimate_extrinsic"];
     if (ESTIMATE_EXTRINSIC == 2)

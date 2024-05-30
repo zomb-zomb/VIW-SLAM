@@ -45,9 +45,11 @@ extern int ESTIMATE_TD;
 extern int ROLLING_SHUTTER;
 extern double ROW, COL;
 
-extern double LEFT_D, RIGHT_D; // Odometry diameter
-extern double ENC_RESOLUTION;  // Encoder resolution
-extern double BASELINE; // Distance between two wheels
+
+extern int ENCODER; 
+extern double LEFT_D, RIGHT_D; 
+extern double ENC_RESOLUTION;  
+extern double WHEELBASE;        
 
 void readParameters(ros::NodeHandle &n);
 

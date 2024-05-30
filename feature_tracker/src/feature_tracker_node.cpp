@@ -56,7 +56,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     last_image_time = img_msg->header.stamp.toSec();
 
     // Frequency control
-    if(round(1.0 * pub_count / (last_image_time - first_image_time)) > FREQ)
+    if(round(1.0 * pub_count / (last_image_time - first_image_time)) <= FREQ)
     {
         PUB_THIS_FRAME = true;
         // Reset the frequency control
@@ -68,7 +68,7 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
     }
     else
         PUB_THIS_FRAME = false;
-    
+    ROS_DEBUG("PUB_THIS_FRAME: %d", PUB_THIS_FRAME);
     // Convert ROS image to OpenCV image
     cv_bridge::CvImageConstPtr ptr;
     if(img_msg->encoding == "8UC1")
@@ -195,15 +195,15 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
                     double len = std::min(1.0, 1.0 * trackerData[i].track_cnt[j] / WINDOW_SIZE);
                     cv::circle(tmp_img, trackerData[i].cur_pts[j], 2, cv::Scalar(255 * (1 - len), 0, 255 * len), 2);
                     
-                    //Draw speed line
-                    Eigen::Vector2d tmp_cur_un_pts (trackerData[i].cur_un_pts[j].x, trackerData[i].cur_un_pts[j].y);
-                    Eigen::Vector2d tmp_pts_velocity (trackerData[i].pts_velocity[j].x, trackerData[i].pts_velocity[j].y);
-                    Eigen::Vector3d tmp_prev_un_pts;
-                    tmp_prev_un_pts.head(2) = tmp_cur_un_pts - 0.10 * tmp_pts_velocity;
-                    tmp_prev_un_pts.z() = 1;
-                    Eigen::Vector2d tmp_prev_uv;
-                    trackerData[i].m_camera->spaceToPlane(tmp_prev_un_pts, tmp_prev_uv);
-                    cv::line(tmp_img, trackerData[i].cur_pts[j], cv::Point2f(tmp_prev_uv.x(), tmp_prev_uv.y()), cv::Scalar(255 , 0, 0), 1 , 8, 0);                     
+                    // //Draw speed line
+                    // Eigen::Vector2d tmp_cur_un_pts (trackerData[i].cur_un_pts[j].x, trackerData[i].cur_un_pts[j].y);
+                    // Eigen::Vector2d tmp_pts_velocity (trackerData[i].pts_velocity[j].x, trackerData[i].pts_velocity[j].y);
+                    // Eigen::Vector3d tmp_prev_un_pts;
+                    // tmp_prev_un_pts.head(2) = tmp_cur_un_pts - 0.10 * tmp_pts_velocity;
+                    // tmp_prev_un_pts.z() = 1;
+                    // Eigen::Vector2d tmp_prev_uv;
+                    // trackerData[i].m_camera->spaceToPlane(tmp_prev_un_pts, tmp_prev_uv);
+                    // cv::line(tmp_img, trackerData[i].cur_pts[j], cv::Point2f(tmp_prev_uv.x(), tmp_prev_uv.y()), cv::Scalar(255 , 0, 0), 1 , 8, 0);                     
                 }
             }
             // cv::imshow("vis", stereo_img);
